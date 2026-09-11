@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Learn — 我的 AI 学习笔记</title>
+<meta name="description" content="记录 AI 工具的使用心得和学习路径，分享给所有对 AI 感兴趣的人。">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.06);
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --text-muted: #555;
+    --accent: #818cf8;
+    --accent-dim: rgba(129,140,248,0.15);
+    --glow: rgba(99,102,241,0.12);
+  }
+  [data-theme="light"] {
+    --bg: #fafbfc;
+    --bg-card: #fff;
+    --border: #eef0f4;
+    --text: #1a1a2e;
+    --text-dim: #666;
+    --text-muted: #aaa;
+    --accent: #4f46e5;
+    --accent-dim: #eef2ff;
+    --glow: rgba(79,70,229,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+    transition: background 0.3s, color 0.3s; overflow-x: hidden;
+  }
+  .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; text-decoration: none; }
+
+  /* Glow */
+  .glow-bg {
+    position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 16px 0; backdrop-filter: blur(12px);
+    transition: background 0.3s;
+  }
+  nav .container { display: flex; justify-content: space-between; align-items: center; }
+  .logo { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-right { display: flex; align-items: center; gap: 24px; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { font-size: 14px; color: var(--text-dim); transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+  .theme-toggle {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-card); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 16px; transition: all 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+  .lang-toggle {
+    font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg-card); cursor: pointer; color: var(--text-dim); transition: all 0.2s;
+  }
+  .lang-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Hero */
+  .hero { padding: 100px 0 70px; position: relative; z-index: 1; }
+  .hero h1 {
+    font-size: 48px; font-weight: 800; letter-spacing: -2px; line-height: 1.1;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--text) 30%, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero .desc { font-size: 17px; color: var(--text-dim); max-width: 500px; }
+  .hero .desc-en { font-size: 14px; color: var(--text-muted); margin-top: 8px; }
+  .hero .stats { display: flex; gap: 40px; margin-top: 36px; }
+  .hero .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); }
+  .hero .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Sections */
+  .section { padding: 56px 0; position: relative; z-index: 1; }
+  .section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .section-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); }
+
+  /* Category Tabs */
+  .tabs { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+  .tab {
+    padding: 6px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    border: 1px solid var(--border); background: transparent; color: var(--text-dim);
+    transition: all 0.2s;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--accent); }
+  .tab.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  /* Tool Cards */
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .tool-grid { grid-template-columns: 1fr; } }
+  .tool-card {
+    padding: 22px; border-radius: 14px; background: var(--bg-card);
+    border: 1px solid var(--border); transition: all 0.3s; cursor: pointer;
+  }
+  .tool-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px var(--glow); }
+  .tool-card .icon {
+    width: 44px; height: 44px; border-radius: 10px; margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800; background: var(--accent-dim); color: var(--accent);
+  }
+  .tool-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .tool-card .en-name { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+  .tool-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+  .tool-card .tag {
+    display: inline-block; margin-top: 12px; font-size: 10px; padding: 3px 8px;
+    border-radius: 4px; background: var(--accent-dim); color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tool-card .stars { color: #fbbf24; font-size: 12px; margin-bottom: 8px; letter-spacing: 2px; }
+
+  /* Notes */
+  .note-list { display: flex; flex-direction: column; gap: 12px; }
+  .note-card {
+    padding: 24px; border-radius: 14px; background: var(--bg-card);
+    border: 1px solid var(--border); transition: all 0.3s; cursor: pointer;
+  }
+  .note-card:hover { border-color: rgba(255,255,255,0.12); }
+  [data-theme="light"] .note-card:hover { border-color: var(--accent); box-shadow: 0 2px 16px var(--glow); }
+  .note-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .note-date { font-size: 12px; color: var(--text-muted); font-family: 'SF Mono', monospace; }
+  .note-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .note-card .excerpt { font-size: 14px; color: var(--text-dim); }
+  .note-tags { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .note-tags span {
+    font-size: 11px; color: var(--accent); background: var(--accent-dim);
+    padding: 3px 10px; border-radius: 6px;
+  }
+  .load-more {
+    display: block; margin: 24px auto 0; padding: 10px 28px; border-radius: 8px;
+    border: 1px solid var(--border); background: transparent; color: var(--text-dim);
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
+  }
+  .load-more:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Roadmap */
+  .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 600px) { .roadmap { grid-template-columns: 1fr; } }
+  .roadmap-item {
+    padding: 22px; border-radius: 14px; background: var(--bg-card);
+    border: 1px solid var(--border); text-align: center;
+  }
+  .roadmap-item .step {
+    font-size: 11px; color: var(--accent); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;
+  }
+  .roadmap-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .roadmap-item p { font-size: 12px; color: var(--text-dim); }
+
+  /* About */
+  .about-card {
+    padding: 36px; border-radius: 16px; background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+  .about-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+  .about-card p { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; }
+  .about-links { display: flex; gap: 12px; margin-top: 20px; }
+  .about-link {
+    padding: 8px 18px; border-radius: 8px; font-size: 13px;
+    border: 1px solid var(--border); transition: all 0.2s;
+  }
+  .about-link:hover { border-color: var(--accent); color: var(--accent); }
+  .about-link.primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .about-link.primary:hover { opacity: 0.85; }
+
+  /* Footer */
+  footer {
+    padding: 40px 0; border-top: 1px solid var(--border); text-align: center;
+    position: relative; z-index: 1;
+  }
+  footer p { font-size: 12px; color: var(--text-muted); }
+
+  /* Fade in animation */
+  .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s, transform 0.6s; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="glow-bg"></div>
+
+<nav>
+  <div class="container">
+    <div class="logo">AI Learn</div>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a href="#tools" data-zh="工具" data-en="Tools">工具</a>
+        <a href="#notes" data-zh="笔记" data-en="Notes">笔记</a>
+        <a href="#roadmap" data-zh="路线" data-en="Roadmap">路线</a>
+        <a href="#about" data-zh="关于" data-en="About">关于</a>
+      </div>
+      <button class="lang-toggle" onclick="toggleLang()" title="切换语言">EN</button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">☀</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="container">
+    <h1 class="fade-in" data-zh="我的 AI<br>学习笔记" data-en="My AI<br>Learning Notes">我的 AI<br>学习笔记</h1>
+    <p class="desc fade-in" data-zh="记录 AI 工具的使用心得和学习路径，分享给所有对 AI 感兴趣的人。" data-en="Documenting AI tools, learning paths, and hands-on insights — shared openly for anyone curious about AI.">记录 AI 工具的使用心得和学习路径，分享给所有对 AI 感兴趣的人。</p>
+    <p class="desc-en fade-in">My AI Learning Journey — tools, notes, and insights shared openly.</p>
+    <div class="stats fade-in">
+      <div><div class="stat-num">12</div><div class="stat-label" data-zh="工具评测" data-en="Tools Reviewed">工具评测</div></div>
+      <div><div class="stat-num">30+</div><div class="stat-label" data-zh="学习笔记" data-en="Learning Notes">学习笔记</div></div>
+      <div><div class="stat-num">6</div><div class="stat-label" data-zh="主题领域" data-en="Topic Areas">主题领域</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tools -->
+<div class="section" id="tools">
+  <div class="container">
+    <div class="section-head fade-in">
+      <div class="section-dot"></div>
+      <div class="section-title" data-zh="工具推荐 / Recommended Tools" data-en="Recommended Tools">工具推荐 / Recommended Tools</div>
+    </div>
+    <div class="tabs fade-in">
+      <span class="tab active" onclick="filterTools('all', this)" data-zh="全部" data-en="All">全部</span>
+      <span class="tab" onclick="filterTools('coding', this)" data-zh="编程" data-en="Coding">编程</span>
+      <span class="tab" onclick="filterTools('productivity', this)" data-zh="效率" data-en="Productivity">效率</span>
+      <span class="tab" onclick="filterTools('creative', this)" data-zh="创作" data-en="Creative">创作</span>
+      <span class="tab" onclick="filterTools('learning', this)" data-zh="学习" data-en="Learning">学习</span>
+    </div>
+    <div class="tool-grid" id="toolGrid">
+
+      <div class="tool-card fade-in" data-cat="coding">
+        <div class="icon">C</div>
+        <div class="stars">★★★★★</div>
+        <h3>Cursor</h3>
+        <div class="en-name">AI Code Editor</div>
+        <p data-zh="AI 驱动的代码编辑器，Tab 补全极其丝滑，让编程效率提升 3 倍。零基础也能借助它写出可用代码。" data-en="AI-powered code editor with silky-smooth Tab completion. 3x your coding speed, even beginners can ship working code.">AI 驱动的代码编辑器，Tab 补全极其丝滑，让编程效率提升 3 倍。零基础也能借助它写出可用代码。</p>
+        <span class="tag" data-zh="编程" data-en="Coding">编程</span>
+      </div>
+
+      <div class="tool-card fade-in" data-cat="productivity">
+        <div class="icon">Q</div>
+        <div class="stars">★★★★★</div>
+        <h3>QoderWork</h3>
+        <div class="en-name">Desktop AI Assistant</div>
+        <p data-zh="桌面端 AI 工作助手，直接操作本地文件、运行代码、自动化日常工作流，比网页版 ChatGPT 实用得多。" data-en="Desktop AI assistant that operates local files, runs code, and automates workflows — far more practical than web-based chatbots.">桌面端 AI 工作助手，直接操作本地文件、运行代码、自动化日常工作流，比网页版 ChatGPT 实用得多。</p>
+        <span class="tag" data-zh="效率" data-en="Productivity">效率</span>
+      </div>
+
+      <div class="tool-card fade-in" data-cat="creative">
+        <div class="icon">M</div>
+        <div class="stars">★★★★☆</div>
+        <h3>Midjourney</h3>
+        <div class="en-name">AI Image Generation</div>
+        <p data-zh="目前效果最好的 AI 绘图工具，V6 版本的光影和细节令人惊叹。适合封面图、概念设计、社交媒体素材。" data-en="Best AI image generator available. V6 delivers stunning lighting and detail. Great for covers, concepts, and social media.">目前效果最好的 AI 绘图工具，V6 版本的光影和细节令人惊叹。适合封面图、概念设计、社交媒体素材。</p>
+        <span class="tag" data-zh="创作" data-en="Creative">创作</span>
+      </div>
+
+      <div class="tool-card fade-in" data-cat="learning">
+        <div class="icon">N</div>
+        <div class="stars">★★★★☆</div>
+        <h3>NotebookLM</h3>
+        <div class="en-name">Google AI Notebook</div>
+        <p data-zh="Google 出品的 AI 笔记本，上传资料后自动生成摘要和问答，还能生成播客式音频讲解，学习利器。" data-en="Google's AI notebook — upload docs, get auto-summaries, Q&A, and even podcast-style audio explanations.">Google 出品的 AI 笔记本，上传资料后自动生成摘要和问答，还能生成播客式音频讲解，学习利器。</p>
+        <span class="tag" data-zh="学习" data-en="Learning">学习</span>
+      </div>
+
+      <div class="tool-card fade-in" data-cat="productivity">
+        <div class="icon">N</div>
+        <div class="stars">★★★★☆</div>
+        <h3>Notion AI</h3>
+        <div class="en-name">AI-Powered Workspace</div>
+        <p data-zh="在笔记工具中集成 AI 写作和整理能力，适合知识管理和内容创作。AI 功能作为增值模块，融入日常工作流。" data-en="AI writing & organizing built into your note-taking workflow. A natural add-on for knowledge management.">在笔记工具中集成 AI 写作和整理能力，适合知识管理和内容创作。AI 功能作为增值模块，融入日常工作流。</p>
+        <span class="tag" data-zh="效率" data-en="Productivity">效率</span>
+      </div>
+
+      <div class="tool-card fade-in" data-cat="coding">
+        <div class="icon">V</div>
+        <div class="stars">★★★★☆</div>
+        <h3>v0 by Vercel</h3>
+        <div class="en-name">AI UI Generator</div>
+        <p data-zh="用自然语言描述界面需求，直接生成可用的 React 组件代码。对非前端开发者来说非常友好。" data-en="Describe UI in plain language, get working React components. Extremely friendly for non-frontend developers.">用自然语言描述界面需求，直接生成可用的 React 组件代码。对非前端开发者来说非常友好。</p>
+        <span class="tag" data-zh="编程" data-en="Coding">编程</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Notes -->
+<div class="section" id="notes">
+  <div class="container">
+    <div class="section-head fade-in">
+      <div class="section-dot"></div>
+      <div class="section-title" data-zh="学习笔记 / Learning Notes" data-en="Learning Notes">学习笔记 / Learning Notes</div>
+    </div>
+    <div class="note-list">
+
+      <div class="note-card fade-in">
+        <div class="note-meta">
+          <span class="note-date">2026-09-08</span>
+        </div>
+        <h3 data-zh="从零理解 RAG：检索增强生成实战笔记" data-en="Understanding RAG from Scratch: A Hands-on Guide">从零理解 RAG：检索增强生成实战笔记</h3>
+        <p class="excerpt" data-zh="RAG 的核心思路很简单：先从知识库中检索相关文档片段，再把这些片段作为上下文喂给大模型生成回答。本文记录了从向量数据库选型、chunk 策略设计到检索质量调优的完整实践过程。" data-en="RAG's core idea is simple: retrieve relevant doc snippets from a knowledge base, then feed them as context to an LLM. This post covers the full journey — from vector DB selection to chunk strategy and retrieval tuning.">RAG 的核心思路很简单：先从知识库中检索相关文档片段，再把这些片段作为上下文喂给大模型生成回答。本文记录了从向量数据库选型、chunk 策略设计到检索质量调优的完整实践过程。</p>
+        <div class="note-tags"><span>#RAG</span><span>#向量数据库</span><span>#实战</span></div>
+      </div>
+
+      <div class="note-card fade-in">
+        <div class="note-meta">
+          <span class="note-date">2026-09-03</span>
+        </div>
+        <h3 data-zh="Prompt Engineering 进阶：5 个被低估的技巧" data-en="Prompt Engineering Advanced: 5 Underrated Techniques">Prompt Engineering 进阶：5 个被低估的技巧</h3>
+        <p class="excerpt" data-zh="大多数人停留在"写个好的 prompt"的阶段。这篇文章总结了 5 个实战中真正有效的进阶技巧，包括角色锚定、思维链分解、few-shot 边界条件、自我反思循环和结构化输出控制。" data-en="Most people are stuck at 'write a good prompt.' This post covers 5 techniques that actually work in practice: role anchoring, chain-of-thought decomposition, few-shot boundary conditions, self-reflection loops, and structured output control.">大多数人停留在"写个好的 prompt"的阶段。这篇文章总结了 5 个实战中真正有效的进阶技巧，包括角色锚定、思维链分解、few-shot 边界条件、自我反思循环和结构化输出控制。</p>
+        <div class="note-tags"><span>#Prompt</span><span>#进阶</span><span>#技巧</span></div>
+      </div>
+
+      <div class="note-card fade-in">
+        <div class="note-meta">
+          <span class="note-date">2026-08-25</span>
+        </div>
+        <h3 data-zh="AI Agent 工作流设计：我的第一个自动化项目复盘" data-en="AI Agent Workflow Design: My First Automation Project Retrospective">AI Agent 工作流设计：我的第一个自动化项目复盘</h3>
+        <p class="excerpt" data-zh="记录了第一次完整设计 AI Agent 工作流的全过程——从需求拆解、工具调用链设计到错误恢复机制，踩了不少坑，也总结了一些可复用的设计模式。" data-en="Documenting the full process of designing my first AI Agent workflow — from requirement breakdown and tool-call chain design to error recovery. Lots of lessons learned and reusable patterns.">记录了第一次完整设计 AI Agent 工作流的全过程——从需求拆解、工具调用链设计到错误恢复机制，踩了不少坑，也总结了一些可复用的设计模式。</p>
+        <div class="note-tags"><span>#Agent</span><span>#工作流</span><span>#复盘</span></div>
+      </div>
+
+      <div class="note-card fade-in">
+        <div class="note-meta">
+          <span class="note-date">2026-08-15</span>
+        </div>
+        <h3 data-zh="用 AI 学 AI：让大模型帮我理解 Transformer" data-en="Learning AI with AI: Using LLMs to Understand Transformers">用 AI 学 AI：让大模型帮我理解 Transformer</h3>
+        <p class="excerpt" data-zh="用最通俗的方式理解 Transformer 架构。从 Self-Attention 的直觉开始，一步步拆解多头注意力、位置编码和残差连接，全程用 AI 辅助学习和验证理解。" data-en="Understanding Transformer architecture in plain language. Starting from Self-Attention intuition, breaking down multi-head attention, positional encoding, and residual connections — all with AI-assisted learning.">用最通俗的方式理解 Transformer 架构。从 Self-Attention 的直觉开始，一步步拆解多头注意力、位置编码和残差连接，全程用 AI 辅助学习和验证理解。</p>
+        <div class="note-tags"><span>#Transformer</span><span>#基础</span><span>#学习方法</span></div>
+      </div>
+
+    </div>
+    <button class="load-more fade-in" data-zh="加载更多..." data-en="Load more...">加载更多...</button>
+  </div>
+</div>
+
+<!-- Roadmap -->
+<div class="section" id="roadmap">
+  <div class="container">
+    <div class="section-head fade-in">
+      <div class="section-dot"></div>
+      <div class="section-title" data-zh="学习路线 / Learning Roadmap" data-en="Learning Roadmap">学习路线 / Learning Roadmap</div>
+    </div>
+    <div class="roadmap">
+      <div class="roadmap-item fade-in">
+        <div class="step" data-zh="阶段 01" data-en="Phase 01">阶段 01</div>
+        <h4 data-zh="工具上手" data-en="Get Started">工具上手</h4>
+        <p data-zh="掌握 ChatGPT、Claude 等主流 AI 工具的基本用法和 Prompt 技巧" data-en="Master basic usage and prompt techniques for ChatGPT, Claude, and other mainstream tools">掌握 ChatGPT、Claude 等主流 AI 工具的基本用法和 Prompt 技巧</p>
+      </div>
+      <div class="roadmap-item fade-in">
+        <div class="step" data-zh="阶段 02" data-en="Phase 02">阶段 02</div>
+        <h4 data-zh="原理理解" data-en="Understand the Fundamentals">原理理解</h4>
+        <p data-zh="理解大模型工作原理：Transformer、注意力机制、微调和 RAG" data-en="Understand how LLMs work: Transformer, attention, fine-tuning, and RAG">理解大模型工作原理：Transformer、注意力机制、微调和 RAG</p>
+      </div>
+      <div class="roadmap-item fade-in">
+        <div class="step" data-zh="阶段 03" data-en="Phase 03">阶段 03</div>
+        <h4 data-zh="构建 Agent" data-en="Build Agents">构建 Agent</h4>
+        <p data-zh="从工具使用者变成工具构建者，设计自己的 AI Agent 和自动化工作流" data-en="Go from tool user to tool builder — design your own AI Agents and automated workflows">从工具使用者变成工具构建者，设计自己的 AI Agent 和自动化工作流</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- About -->
+<div class="section" id="about">
+  <div class="container">
+    <div class="section-head fade-in">
+      <div class="section-dot"></div>
+      <div class="section-title" data-zh="关于 / About" data-en="About">关于 / About</div>
+    </div>
+    <div class="about-card fade-in">
+      <h3 data-zh="Hi, 我是一个 AI 学习者" data-en="Hi, I'm an AI Learner">Hi, 我是一个 AI 学习者</h3>
+      <p data-zh="这个网站记录我在 AI 领域的学习历程。从最初的好奇，到动手使用各种工具，再到尝试构建自己的 AI 应用——每一步的思考和笔记都留在这里。" data-en="This site documents my AI learning journey. From initial curiosity to hands-on tool usage, to building my own AI applications — every thought and note is captured here.">这个网站记录我在 AI 领域的学习历程。从最初的好奇，到动手使用各种工具，再到尝试构建自己的 AI 应用——每一步的思考和笔记都留在这里。</p>
+      <p data-zh="我相信学习最好的方式就是输出。把学到的东西写下来、分享出去，既是自我检验，也希望能帮到同路人。" data-en="I believe the best way to learn is to create. Writing down and sharing what I learn is both self-verification and a way to help others on the same path.">我相信学习最好的方式就是输出。把学到的东西写下来、分享出去，既是自我检验，也希望能帮到同路人。</p>
+      <div class="about-links">
+        <a href="mailto:your@email.com" class="about-link primary" data-zh="联系我" data-en="Contact">联系我</a>
+        <a href="#" class="about-link">GitHub</a>
+        <a href="#" class="about-link">Twitter / X</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p data-zh="Built with passion for AI learning · 2026" data-en="Built with passion for AI learning · 2026">Built with passion for AI learning · 2026</p>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle
+  function toggleTheme() {
+    const body = document.body;
+    const btn = document.querySelector('.theme-toggle');
+    if (body.dataset.theme === 'dark') {
+      body.dataset.theme = 'light';
+      btn.textContent = '☾';
+    } else {
+      body.dataset.theme = 'dark';
+      btn.textContent = '☀';
+    }
+  }
+
+  // Language toggle
+  let currentLang = 'zh';
+  function toggleLang() {
+    currentLang = currentLang === 'zh' ? 'en' : 'zh';
+    document.querySelector('.lang-toggle').textContent = currentLang === 'zh' ? 'EN' : '中';
+    document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+      const val = el.getAttribute('data-' + currentLang);
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = val;
+      else el.innerHTML = val;
+    });
+  }
+
+  // Tool filter
+  function filterTools(cat, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tool-card').forEach(card => {
+      card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+    });
+  }
+
+  // Scroll fade-in
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
